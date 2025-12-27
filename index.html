@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jessie Math - 四年級統計圖表冒險</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-yellow: #FFB800;
+            --secondary-blue: #5D5FEF;
+            --bg-light: #F8F9FF;
+            --text-dark: #2D3436;
+            --accent-red: #FF4757;
+            --accent-green: #2ED573;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Noto Sans TC', sans-serif; }
+        body { background-color: var(--bg-light); color: var(--text-dark); overflow-x: hidden; }
+
+        /* --- Header / Hero Section --- */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 5%;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .hero-left { display: flex; align-items: center; gap: 15px; }
+        .logo-circle {
+            width: 50px;
+            height: 50px;
+            background: var(--primary-yellow);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        .logo-circle img { width: 100%; height: 100%; object-fit: cover; }
+        .brand-name { font-size: 24px; font-weight: 700; color: #2C3E50; }
+
+        .nav-right { display: flex; gap: 10px; }
+        .nav-btn {
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 25px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: 0.3s;
+            border: 1px solid #E0E0E0;
+            color: #555;
+            background: white;
+            cursor: pointer;
+        }
+        .nav-btn.active { background: #EEF2FF; color: var(--secondary-blue); border-color: var(--secondary-blue); }
+        .nav-btn:hover { background: #f0f0f0; }
+
+        /* --- Game Containers --- */
+        .container { max-width: 800px; margin: 40px auto; padding: 20px; text-align: center; }
+        .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); position: relative; overflow: hidden; }
+        .hidden { display: none !important; }
+
+        input[type="text"] {
+            padding: 12px 20px;
+            width: 80%;
+            border-radius: 10px;
+            border: 2px solid #DDD;
+            margin: 20px 0;
+            font-size: 18px;
+        }
+        .btn-main {
+            background: var(--secondary-blue);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 30px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 4px 15px rgba(93, 95, 239, 0.3);
+        }
+        .btn-main:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(93, 95, 239, 0.4); }
+
+        /* --- Stage Selection --- */
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-top: 20px; }
+        .stage-card {
+            background: #fff;
+            border: 2px solid #EEE;
+            padding: 20px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .stage-card:hover { border-color: var(--primary-yellow); transform: scale(1.05); }
+        .stage-card i { font-size: 40px; color: var(--primary-yellow); margin-bottom: 10px; }
+
+        /* --- Game Area --- */
+        .game-stats { display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 18px; font-weight: bold; }
+        .timer { color: var(--accent-red); }
+        .score { color: var(--secondary-blue); }
+        .combo-text { color: orange; font-style: italic; font-size: 24px; height: 30px; }
+
+        .visual-card { 
+            background: #f0f4f8; 
+            border-radius: 15px; 
+            padding: 30px 20px 40px 20px; 
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            height: 220px;
+            gap: 20px;
+            border: 1px dashed #ccc;
+            position: relative;
+        }
+        .bar { width: 45px; background: var(--secondary-blue); position: relative; border-radius: 5px 5px 0 0; transition: height 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .bar-label { position: absolute; bottom: -35px; left: 50%; transform: translateX(-50%); font-size: 14px; font-weight: bold; white-space: nowrap; }
+        
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .option-btn {
+            background: white;
+            border: 2px solid #DDD;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .option-btn:hover { border-color: var(--secondary-blue); background: #f8f9ff; }
+        .option-btn:active { transform: scale(0.95); }
+
+        /* --- Feedback Overlays --- */
+        .feedback-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 100; color: white; border-radius: 20px; animation: fadeIn 0.3s;
+        }
+        .correct-bg { background: rgba(46, 213, 115, 0.9); }
+        .wrong-bg { background: rgba(255, 71, 87, 0.9); }
+        .feedback-icon { font-size: 80px; margin-bottom: 10px; animation: pop 0.4s; }
+
+        #pause-overlay {
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.8); z-index: 2000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; color: white;
+        }
+
+        /* --- RWD --- */
+        @media (max-width: 600px) {
+            header { padding: 10px; }
+            .nav-right { flex-wrap: wrap; justify-content: center; gap: 5px; }
+            .grid-3 { grid-template-columns: 1fr; }
+            .options-grid { grid-template-columns: 1fr; }
+            .bar { width: 35px; gap: 10px; }
+        }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes pop { 0% { transform: scale(0.5); } 100% { transform: scale(1); } }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="hero-left">
+            <div class="logo-circle">
+                <img src="JESSIEMATH-Q.png" alt="Logo">
+            </div>
+            <span class="brand-name">Jessie Math</span>
+        </div>
+        <div class="nav-right">
+            <a href="https://jessiemath0703-chu.github.io/website2/" class="nav-btn"><i class="fas fa-home"></i> 首頁</a>
+            <a href="https://jessiemath0703-chu.github.io/Game-Lobby/" class="nav-btn"><i class="fas fa-gamepad"></i> 遊戲大廳</a>
+            <a href="https://jessiemath0703-chu.github.io/Game-Lobby/#g4-u10" class="nav-btn active"><i class="fas fa-chevron-left"></i> 四年級統計圖表</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <div id="setup-screen" class="card">
+            <h2>📊 統計圖表冒險王</h2>
+            <input type="text" id="player-name" placeholder="請輸入你的英雄名字..." maxlength="10">
+            <div style="text-align: left; background: #f0f2f5; padding: 20px; border-radius: 15px; margin-bottom: 20px;">
+                <p><strong>📜 冒險手冊：</strong></p>
+                <ul style="margin-left: 20px; line-height: 1.8;">
+                    <li>⌛ 倒數計時 <b>60 秒</b>，看誰分數高。</li>
+                    <li>⭕ 答對：+50 分，<b>時間獎勵 5 秒</b>。</li>
+                    <li>❌ 答錯：不加分，<b>時間扣除 5 秒</b>。</li>
+                    <li>🔥 連擊 (Combo)：連續答對分數有加乘獎金！</li>
+                </ul>
+            </div>
+            <button class="btn-main" onclick="toStageSelect()">選擇關卡</button>
+        </div>
+
+        <div id="stage-screen" class="card hidden">
+            <h3>請選擇冒險主題</h3>
+            <div class="grid-3">
+                <div class="stage-card" onclick="startGame(1)">
+                    <i class="fas fa-chart-bar"></i>
+                    <h4>第一關</h4>
+                    <p>報讀長條圖</p>
+                </div>
+                <div class="stage-card" onclick="startGame(2)">
+                    <i class="fas fa-calculator"></i>
+                    <h4>第二關</h4>
+                    <p>數據大挑戰</p>
+                </div>
+                <div class="stage-card" onclick="startGame(3)">
+                    <i class="fas fa-chart-line"></i>
+                    <h4>第三關</h4>
+                    <p>報讀折線圖</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="game-screen" class="card hidden">
+            <div id="feedback" class="feedback-overlay hidden">
+                <i id="feedback-icon" class="fas"></i>
+                <h2 id="feedback-text"></h2>
+                <p id="feedback-answer" style="font-size: 22px; margin-top: 15px; font-weight: bold;"></p>
+            </div>
+
+            <div class="game-stats">
+                <div class="timer"><i class="fas fa-hourglass-half"></i> <span id="time-left">60</span>s</div>
+                <div id="combo-display" class="combo-text"></div>
+                <div class="score">得分: <span id="current-score">0</span></div>
+            </div>
+            
+            <div class="question-area">
+                <p id="scenario-text" style="color: #666; font-size: 14px; margin-bottom: 5px;"></p>
+                <h3 id="question-text" style="margin-bottom: 15px; color: #2D3436; min-height: 50px;">載入中...</h3>
+                <div id="visual-container" class="visual-card"></div>
+                <div id="options" class="options-grid"></div>
+            </div>
+
+            <div class="game-ctrls" style="display: flex; gap: 10px; justify-content: center; margin-top: 25px;">
+                <button class="nav-btn" onclick="resetGame()"><i class="fas fa-redo"></i> 重新</button>
+                <button class="nav-btn" onclick="togglePause()"><i class="fas fa-pause"></i> 暫停</button>
+                <button class="nav-btn" onclick="backToMenu()"><i class="fas fa-times"></i> 放棄</button>
+            </div>
+        </div>
+
+        <div id="result-screen" class="card hidden">
+            <h2 id="result-title">冒險結束！</h2>
+            <div id="star-rating" style="font-size: 50px; color: gold; margin: 15px 0;"></div>
+            <p style="font-size: 28px; font-weight: bold; color: var(--secondary-blue);">最終得分：<span id="final-score">0</span></p>
+            <div id="leaderboard" style="margin: 25px 0; text-align: left; background: #f8f9fa; padding: 20px; border-radius: 15px; border: 1px solid #eee;">
+                <strong>🏆 英雄排行榜</strong>
+                <ul id="leader-list" style="list-style: none; margin-top: 10px;"></ul>
+            </div>
+            <button class="btn-main" onclick="backToMenu()">再次挑戰</button>
+        </div>
+    </div>
+
+    <div id="pause-overlay" class="hidden">
+        <i class="fas fa-pause-circle" style="font-size: 80px; margin-bottom: 20px;"></i>
+        <h1>遊戲休息中...</h1>
+        <button class="btn-main" style="margin-top: 30px;" onclick="togglePause()">繼續冒險</button>
+    </div>
+
+    <script>
+        let playerName = "";
+        let currentStage = 1;
+        let score = 0;
+        let timeLeft = 60;
+        let timerInterval;
+        let combo = 0;
+        let isPaused = false;
+        let isAcceptingInput = true;
+        let currentAnswer = "";
+
+        const SCENARIOS = [
+            { title: "🍎 水果店銷量統計", items: ["蘋果", "香蕉", "西瓜", "葡萄"] },
+            { title: "👕 服飾店各色衣量", items: ["紅衣", "藍衣", "黃衣", "綠衣"] },
+            { title: "🏃 班級運動會人數", items: ["大班", "二班", "三班", "四班"] },
+            { title: "📚 圖書館借書數量", items: ["週一", "週二", "週三", "週四"] },
+            { title: "🍦 冰淇淋口味統計", items: ["草莓", "香草", "巧克力", "薄荷"] }
+        ];
+
+        // --- 核心流程 ---
+        function toStageSelect() {
+            playerName = document.getElementById('player-name').value.trim();
+            if(!playerName) { alert("請先輸入名字喔！"); return; }
+            document.getElementById('setup-screen').classList.add('hidden');
+            document.getElementById('stage-screen').classList.remove('hidden');
+        }
+
+        function startGame(stage) {
+            currentStage = stage;
+            score = 0;
+            timeLeft = 60;
+            combo = 0;
+            isPaused = false;
+            isAcceptingInput = true;
+            document.getElementById('stage-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+            updateStats();
+            nextQuestion();
+            startTimer();
+        }
+
+        function backToMenu() {
+            clearInterval(timerInterval);
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('stage-screen').classList.remove('hidden');
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                if(!isPaused) {
+                    timeLeft--;
+                    document.getElementById('time-left').innerText = timeLeft;
+                    if(timeLeft <= 0) endGame();
+                }
+            }, 1000);
+        }
+
+        function togglePause() {
+            isPaused = !isPaused;
+            document.getElementById('pause-overlay').classList.toggle('hidden');
+        }
+
+        function resetGame() {
+            clearInterval(timerInterval);
+            startGame(currentStage);
+        }
+
+        function updateStats() {
+            document.getElementById('current-score').innerText = score;
+            document.getElementById('time-left').innerText = timeLeft;
+            const comboDiv = document.getElementById('combo-display');
+            comboDiv.innerText = combo >= 2 ? `🔥 Combo x${combo}` : "";
+        }
+
+        // --- 出題邏輯 ---
+        function nextQuestion() {
+            const visual = document.getElementById('visual-container');
+            const optionsDiv = document.getElementById('options');
+            const scene = SCENARIOS[Math.floor(Math.random() * SCENARIOS.length)];
+            
+            visual.innerHTML = "";
+            optionsDiv.innerHTML = "";
+            document.getElementById('scenario-text').innerText = scene.title;
+
+            let data = [];
+            for(let i=0; i<4; i++) data.push(Math.floor(Math.random() * 9 + 1) * 10); // 10, 20... 90
+
+            let qText = "";
+            let options = [];
+
+            // 隨機決定該主題下的題目類型
+            const qType = Math.floor(Math.random() * 3);
+
+            if(currentStage === 1) { // 第一關：基礎報讀
+                let targetIdx = Math.floor(Math.random()*4);
+                qText = `請問「${scene.items[targetIdx]}」代表的數值是多少？`;
+                currentAnswer = data[targetIdx].toString();
+                renderBarChart(data, scene.items);
+                options = [currentAnswer, (data[targetIdx]+10).toString(), (data[targetIdx]-10).toString(), "100"];
+            } 
+            else if(currentStage === 2) { // 第二關：運算與分析
+                renderBarChart(data, scene.items);
+                if(qType === 0) { // 最高
+                    qText = `哪一個項目代表的數值「最高」？`;
+                    currentAnswer = scene.items[data.indexOf(Math.max(...data))];
+                    options = scene.items;
+                } else if(qType === 1) { // 比較
+                    let idx1 = 0, idx2 = 1;
+                    qText = `請問「${scene.items[idx1]}」比「${scene.items[idx2]}」多了多少？`;
+                    currentAnswer = Math.abs(data[idx1] - data[idx2]).toString();
+                    options = [currentAnswer, "10", "20", "5"];
+                } else { // 總和
+                    let idx1 = 0, idx2 = 1;
+                    qText = `「${scene.items[idx1]}」和「${scene.items[idx2]}」合計是多少？`;
+                    currentAnswer = (data[idx1] + data[idx2]).toString();
+                    options = [currentAnswer, (data[idx1]+data[idx2]+10).toString(), "50", "100"];
+                }
+            } 
+            else { // 第三關：折線圖
+                let lineLabels = ["1月", "2月", "3月", "4月"];
+                renderLineChart(data, lineLabels);
+                if(qType === 0) {
+                    qText = `從 2月 到 3月，數值的變化趨勢是？`;
+                    currentAnswer = data[2] > data[1] ? "上升" : (data[2] < data[1] ? "下降" : "不變");
+                    options = ["上升", "下降", "不變", "不確定"];
+                } else if (qType === 1) {
+                    qText = `請問哪一個月份的數值最低？`;
+                    currentAnswer = lineLabels[data.indexOf(Math.min(...data))];
+                    options = lineLabels;
+                } else {
+                    qText = `4月 的數值是多少？`;
+                    currentAnswer = data[3].toString();
+                    options = [currentAnswer, (data[3]+10).toString(), (data[3]-10).toString(), "0"];
+                }
+            }
+
+            document.getElementById('question-text').innerText = qText;
+            options = [...new Set(options)].sort(() => Math.random() - 0.5);
+
+            options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = "option-btn";
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(opt);
+                optionsDiv.appendChild(btn);
+            });
+        }
+
+        // --- 繪圖工具 ---
+        function renderBarChart(data, labels) {
+            const container = document.getElementById('visual-container');
+            data.forEach((val, i) => {
+                const bar = document.createElement('div');
+                bar.className = "bar";
+                bar.style.height = (val * 1.8) + "px";
+                bar.innerHTML = `
+                    <span style="position:absolute; top:-25px; width:100%; font-size:12px; color:#5D5FEF; font-weight:bold;">${val}</span>
+                    <div class="bar-label">${labels[i]}</div>
+                `;
+                container.appendChild(bar);
+            });
+        }
+
+        function renderLineChart(data, labels) {
+            const container = document.getElementById('visual-container');
+            let points = data.map((val, i) => `${i*60 + 40},${180 - val*1.8}`).join(' ');
+            container.innerHTML = `
+                <svg width="250" height="200" style="overflow:visible">
+                    <line x1="30" y1="180" x2="230" y2="180" stroke="#ccc" />
+                    <polyline fill="none" stroke="#5D5FEF" stroke-width="4" stroke-linecap="round" points="${points}" />
+                    ${data.map((val, i) => `
+                        <circle cx="${i*60+40}" cy="${180-val*1.8}" r="6" fill="#FFB800" />
+                        <text x="${i*60+30}" y="${180-val*1.8-15}" font-size="12" fill="#5D5FEF" font-weight="bold">${val}</text>
+                    `).join('')}
+                    ${labels.map((l, i) => `<text x="${i*60+25}" y="200" font-size="14" font-weight="bold">${l}</text>`).join('')}
+                </svg>`;
+        }
+
+        // --- 判定與回饋 ---
+        function checkAnswer(selected) {
+            if(!isAcceptingInput) return;
+            isAcceptingInput = false;
+
+            const feedback = document.getElementById('feedback');
+            const icon = document.getElementById('feedback-icon');
+            const txt = document.getElementById('feedback-text');
+            const ansTxt = document.getElementById('feedback-answer');
+
+            feedback.classList.remove('hidden', 'correct-bg', 'wrong-bg');
+
+            if(selected === currentAnswer) {
+                combo++;
+                score += 50 + (combo * 10);
+                timeLeft += 5;
+                feedback.classList.add('correct-bg');
+                icon.className = "fas fa-check-circle feedback-icon";
+                txt.innerText = "答對了！你真厲害！";
+                ansTxt.innerText = "";
+            } else {
+                combo = 0;
+                timeLeft -= 5;
+                feedback.classList.add('wrong-bg');
+                icon.className = "fas fa-times-circle feedback-icon";
+                txt.innerText = "答錯囉，沒關係！";
+                ansTxt.innerText = `正確答案是：【${currentAnswer}】`;
+            }
+
+            updateStats();
+
+            setTimeout(() => {
+                feedback.classList.add('hidden');
+                isAcceptingInput = true;
+                if(timeLeft > 0) nextQuestion();
+                else endGame();
+            }, 1500); // 延長回饋時間讓學生看清楚正確答案
+        }
+
+        function endGame() {
+            clearInterval(timerInterval);
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+            document.getElementById('final-score').innerText = score;
+            
+            let stars = score > 1500 ? "⭐⭐⭐" : (score > 800 ? "⭐⭐" : "⭐");
+            document.getElementById('star-rating').innerText = stars;
+
+            saveScore(playerName, score);
+            showLeaderboard();
+        }
+
+        function saveScore(name, score) {
+            let scores = JSON.parse(localStorage.getItem('math_king_scores') || "[]");
+            scores.push({name, score, date: new Date().toLocaleDateString()});
+            scores.sort((a,b) => b.score - a.score);
+            localStorage.setItem('math_king_scores', JSON.stringify(scores.slice(0, 5)));
+        }
+
+        function showLeaderboard() {
+            const list = document.getElementById('leader-list');
+            let scores = JSON.parse(localStorage.getItem('math_king_scores') || "[]");
+            list.innerHTML = scores.map((s, i) => `
+                <li style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee;">
+                    <span>${i+1}. ${s.name}</span>
+                    <span style="font-weight:bold; color:var(--secondary-blue);">${s.score} 分</span>
+                </li>`).join('');
+        }
+    </script>
+</body>
+</html>
